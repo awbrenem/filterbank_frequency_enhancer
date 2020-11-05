@@ -160,38 +160,38 @@
 rbsp_efw_init
 
 
-path = '/Users/aaronbreneman/Desktop/code/Aaron/github.umn.edu/filterbank_frequency_enhancer/'
-cdf2tplot,path + 'psp_fld_l2_dfb_dc_bpf_dV34_20181103_v01.cdf'
-;   2 psp_fld_l2_dfb_dc_bpf_dV34_peak 
+timespan,'2018-11-03'
 
-;cdf2tplot,path + 'psp_fld_l2_dfb_dc_bpf_dV34hg_20181103_v01.cdf'
-;   4 psp_fld_l2_dfb_dc_bpf_dV34hg_peak 
-;cdf2tplot,path + 'psp_fld_l2_dfb_dc_bpf_SCMulfhg_20181103_v01.cdf'
-;   6 psp_fld_l2_dfb_dc_bpf_SCMulfhg_peak 
-
-
+;Load the FBK data
+psp_fld_load,type='dfb_dc_bpf',/no_staging
 
 
 ;Spectral data to compare to 
-cdf2tplot,path + 'psp_fld_l2_dfb_ac_spec_dV12hg_20181103_v01.cdf'
-;psp_fld_l2_dfb_ac_spec_SCMdlfhg_20181103_v01.cdf
-;psp_fld_l2_dfb_ac_spec_SCMflfhg_20181103_v01.cdf
+psp_fld_load,type='dfb_dc_spec',/no_staging
 
 
-ylim,['psp_fld_l2_dfb_ac_spec_dV12hg','psp_fld_l2_dfb_dc_bpf_dV34_peak'],100,10000.,1
-tplot,['psp_fld_l2_dfb_ac_spec_dV12hg','psp_fld_l2_dfb_dc_bpf_dV34_peak']
+
+;-------------------------------------------------------
+;Choose whether you want Ew or Bw
+;tname = 'psp_fld_l2_dfb_dc_bpf_dV34hg_peak'
+tname = 'psp_fld_l2_dfb_dc_bpf_SCMulfhg_peak'
+
+
+;ylim,['psp_fld_l2_dfb_dc_spec_dV12hg','psp_fld_l2_dfb_dc_bpf_dV34hg_peak'],100,10000.,1
+;tplot,['psp_fld_l2_dfb_dc_spec_dV12hg','psp_fld_l2_dfb_dc_bpf_dV34hg_peak']
 
 
 ;*****
 ;Limit the data for more easy comparison 
 
-t0z = '2018-11-03/19:13:31'
-t1z = '2018-11-03/19:46:37'
+;t0z = '2018-11-03/19:13:31'
+;t1z = '2018-11-03/19:46:37'
+;t0z = '2018-11-03/19:18:17'
+;t1z = '2018-11-03/19:19:14'
 
-
-tname = 'psp_fld_l2_dfb_dc_bpf_dV34_peak'
 
 ;time_clip,tname,t0z,t1z,/replace
+
 
 ;pro psp_fields_fbk_freq_interpolate,tname,info,$
 ;                                  scale_fac_lim=scale_factor_limit,minamp=minamp,$
@@ -208,10 +208,14 @@ tname = 'psp_fld_l2_dfb_dc_bpf_dV34_peak'
 ;Modify "pk" array so that it has ascending freqs
   pk2 = {x:pk.x,y:pk.y,v:reform(pk.v[0,*])} 
   pk2.y[*] = 0. 
-  for q=0,n_elements(pk2.v[*])-1 do pk2.y[*,q] = reverse(reform(pk.y[*,q]))
+  for q=0,n_elements(pk2.x[*])-1 do pk2.y[q,*] = reverse(reform(pk.y[q,*]))
    pk2.v = reverse(reform(pk.v[0,*]))
 
 pk = pk2
+
+;Remove bottom couple of FBK bins. 
+pk.y[*,5] = 0.
+
 
 ;   plot,pk.v[*,0]
 ;   plot,pk2.v[*,0]
@@ -236,42 +240,6 @@ acdc = strmid(tname,15,2)
 if acdc eq 'ac' then restore,path+'PSP_FIELDS_DFB_AC_FilterBank_BandPass_Response_60dB_and_Above_20190502_DMM.sav'
 if acdc eq 'dc' then restore,path+'PSP_FIELDS_DFB_DC_FilterBank_BandPass_Response_60dB_and_Above_20190502_DMM.sav'
 
-;plot,f_in_use,db_0,xrange=[0.01,1d5],yrange=[-100,0],/xlog,xtitle='freq (Hz)'
-;oplot,f_in_use,db_1
-;oplot,f_in_use,db_2
-;oplot,f_in_use,db_3
-;oplot,f_in_use,db_4
-;oplot,f_in_use,db_5
-;oplot,f_in_use,db_6
-;oplot,f_in_use,db_7
-;oplot,f_in_use,db_8
-;oplot,f_in_use,db_9
-;oplot,f_in_use,db_10
-;oplot,f_in_use,db_11
-;oplot,f_in_use,db_12
-;oplot,f_in_use,db_13
-;oplot,f_in_use,db_14
-
-
-
-
-;restore,path+'PSP_FIELDS_DFB_AC_FilterBank_BandPass_Response_60dB_and_Above_20190502_DMM.sav'
-;AC_F_IN_USE     DOUBLE    = Array[45]
-;DB_0            DOUBLE    = Array[45]
-;DB_1            DOUBLE    = Array[45]
-;DB_2            DOUBLE    = Array[45]
-;DB_3            DOUBLE    = Array[45]
-;DB_4            DOUBLE    = Array[45]
-;DB_5            DOUBLE    = Array[45]
-;DB_6            DOUBLE    = Array[45]
-
-;plot,ac_f_in_use,db_0,xrange=[1,1d5],yrange=[-100,0],/xlog,xtitle='freq (Hz)'
-;oplot,ac_f_in_use,db_1
-;oplot,ac_f_in_use,db_2
-;oplot,ac_f_in_use,db_3
-;oplot,ac_f_in_use,db_4
-;oplot,ac_f_in_use,db_5
-;oplot,ac_f_in_use,db_6
 
 
 
@@ -286,7 +254,7 @@ if acdc eq 'dc' then restore,path+'PSP_FIELDS_DFB_DC_FilterBank_BandPass_Respons
   if ~keyword_set(scale_factor_limit) then scale_factor_limit = 0.9
   if ~keyword_set(minamp) then begin
    if type eq 'dV' then minamp = 1d-3      ;V
-   if type eq 'SC' then minamp = 1d-4      ;nT
+   if type eq 'SC' then minamp = 2*0.012      ;nT
   endif
   if ~keyword_set(maxamp_lim) then maxamp_lim = 2.
 
@@ -331,21 +299,23 @@ for i=0,14 do oplot,freqs_for_gaincurves,gaincurve[*,i]
   for i=0,n_elements(gaincurve[0,*])-1 do gaincurve_norm[*,i] = gaincurve[*,i] - gaincurve_maxv[i]
 
 
+
 plot,freqs_for_gaincurves,gaincurve_norm[*,0],/xlog,xrange=[1,10000],yrange=[-100,0]
 for i=0,14 do oplot,freqs_for_gaincurves,gaincurve_norm[*,i]
 
 
-if acdc eq 'dc' then freq_peak_for_each_gaincurve = float([0.4,0.7,1.6,2.9,6.3,11,25,46,100,185,398,736,1585,2929,8577])
-if acdc eq 'ac' then freq_peak_for_each_gaincurve = float([770,1423,3066,5667,12209,26304,77036])
+;if acdc eq 'dc' then freq_peak_for_each_gaincurve = float([0.4,0.7,1.6,2.9,6.3,11,25,46,100,185,398,736,1585,2929,8577])
+;if acdc eq 'ac' then freq_peak_for_each_gaincurve = float([770,1423,3066,5667,12209,26304,77036])
 
-;freq_peak_for_each_gaincurve = reverse(reform(pk.v[0,*]))
+freq_peak_for_each_gaincurve = pk.v
 
 
 ;--------------------------------------------------
 ;increase the resolution of the gain curves
 ;--------------------------------------------------
 
-;****NEED TO INTERPOLATE TO A LOG SCALE!!!!
+
+stop
 nelem = 1000.
 maxfreq = 10000.
 minfreq = 0.1
@@ -373,7 +343,7 @@ for i=0,14 do oplot,freqs_for_gaincurves,gaincurve_norm[*,i],color=250,psym=-5
 
 
   gaincurve_dB = gc2
-  freqs_for_gaincurves = newfreqs
+  freqs_for_gaincurves_interp = newfreqs
 
 
 
@@ -453,7 +423,7 @@ for i=0,14 do oplot,freqs_for_gaincurves,gaincurve_norm[*,i],color=250,psym=-5
 
      ;;***4) if the neighboring bin value is at noise level then we won't try to interpolate freq or amp
      if type eq 'dV' then noiselevel = 0.0005     ;V  (*****CHECK THIS NUMBER*****)
-     if type eq 'SC' then noiselevel = 1/1000. ;nT  (*****CHECK THIS NUMBER*****)
+     if type eq 'SC' then noiselevel = 0.02
 
      if val_adjacent le noiselevel then begin
         val_adjacent = pk.y[i,whpk]
@@ -482,6 +452,15 @@ for i=0,14 do oplot,freqs_for_gaincurves,gaincurve_norm[*,i],color=250,psym=-5
 
 
 
+
+;***********************
+;AM I ALLOWING BIN_SHIFT TO CHANGE ENOUGH? 
+;I THINK JUST +/- 1 IS ALLOWED, EVEN THOUGH THERE ARE 1000 FREQ BINS. 
+;*****************************
+;*****************************
+;*****************************
+;*****************************
+
      ;;Find the actual freq that a narrowband signal would be to
      ;;appear in the adjacent FBK bin with the amplitude that it does
      goo = where(gaincurve_dB[*,whpk+bin_shift[i]] le dB)
@@ -494,18 +473,22 @@ for i=0,14 do oplot,freqs_for_gaincurves,gaincurve_norm[*,i],color=250,psym=-5
         ;;Adjust frequency upwards
         if bin_shift[i] eq 1 then begin
            locf = goo[where(goo le loc2)]
-           freq_corrected[i] = freqs_for_gaincurves[max(locf)]
+           freq_corrected[i] = freqs_for_gaincurves_interp[max(locf)]
         endif
         ;;Adjust frequency downwards
         if bin_shift[i] eq -1 then begin
            locf = goo[where(goo ge loc2)]
-           freq_corrected[i] = freqs_for_gaincurves[locf[0]]
+           freq_corrected[i] = freqs_for_gaincurves_interp[locf[0]]
         endif
      endif
      ;;Don't adjust frequency
      if bin_shift[i] eq 0 or goo[0] eq -1 then begin
-        freq_corrected[i] = freq_peak_for_each_gaincurve[whpk]
+        freq_corrected[i] = freqs_for_gaincurves_interp[whpk]
      endif
+;     ;;Don't adjust frequency
+;     if bin_shift[i] eq 0 or goo[0] eq -1 then begin
+;        freq_corrected[i] = freq_peak_for_each_gaincurve[whpk]
+;     endif
 
 
      freqbin_orig[i] = whpk
@@ -522,11 +505,11 @@ for i=0,14 do oplot,freqs_for_gaincurves,gaincurve_norm[*,i],color=250,psym=-5
 
 
      if bin_shift[i] eq 1 then begin
-        goo = where(freqs_for_gaincurves le freq_corrected[i])
+        goo = where(freqs_for_gaincurves_interp le freq_corrected[i])
         dB_new = gaincurve_dB[goo[n_elements(goo)-1],whpk]
      endif
      if bin_shift[i] eq -1 then begin
-        goo = where(freqs_for_gaincurves ge freq_corrected[i])
+        goo = where(freqs_for_gaincurves_interp ge freq_corrected[i])
         dB_new = gaincurve_dB[goo[0],whpk]
      endif
      if bin_shift[i] eq 0 then dB_new = 0
@@ -555,22 +538,29 @@ for i=0,14 do oplot,freqs_for_gaincurves,gaincurve_norm[*,i],color=250,psym=-5
 ;--------------------------------------------------
 
 ;*****
-;   testing = 1
+   testing = 1
 
      if keyword_set(testing) and bin_shift[i] ne 0 then begin
         !p.multi = [0,0,2]
 
 
         ;First panel is in dB space
-
+print,time_string(pk.x[i])
+plot,pk.y[i,*],psym=-5
+stop
+if type eq 'dV' then tplot,['psp_fld_l2_dfb_dc_spec_dV12hg','psp_fld_l2_dfb_dc_bpf_dV34hg_peak','psp_fbk_freq_of_max_orig','psp_fbk_freq_of_max_adj']
+if type eq 'SC' then tplot,['psp_fld_l2_dfb_dc_spec_SCMdlfhg','psp_fld_l2_dfb_dc_bpf_SCMulfhg_peak','psp_fbk_freq_of_max_orig','psp_fbk_freq_of_max_adj']
+timebar,pk.x[i]
+stop
+   !p.multi = [0,0,2]
         ;;main gain curve
-        plot,freqs_for_gaincurves,gaincurve_dB[*,whpk],$
+        plot,freqs_for_gaincurves_interp,gaincurve_dB[*,whpk],$
              ytitle='amplitude in dB',$
              xtitle='freq (Hz)',$
              title='FBK freq and amplitude enhancement process',$
              yrange = [-60,20], /xlog,/xs,xrange = [0.01, 1d4],/ystyle,thick=2
         ;;adjacent gain curve
-        oplot,freqs_for_gaincurves,gaincurve_dB[*,whpk+bin_shift[i]],color=50,thick=2
+        oplot,freqs_for_gaincurves_interp,gaincurve_dB[*,whpk+bin_shift[i]],color=50,thick=2
 
         ;;original frequency and amplitude
         oplot,[freq_peak_for_each_gaincurve[whpk],freq_peak_for_each_gaincurve[whpk]],$
@@ -587,8 +577,6 @@ for i=0,14 do oplot,freqs_for_gaincurves,gaincurve_norm[*,i],color=250,psym=-5
         ;;horizontal line from peak of main curve to adjusted freq
         oplot,[freq_peak_for_each_gaincurve[whpk],freq_corrected[i]],$
               [0,0],color=50
-
-
 
         ;;vertical line showing actual frequency
         oplot,[freq_corrected[i],freq_corrected[i]],$
@@ -616,13 +604,13 @@ for i=0,14 do oplot,freqs_for_gaincurves,gaincurve_norm[*,i],color=250,psym=-5
         ;;Second panel shows fractional value change of amplitude
 
         ;;main gain curve
-        plot,freqs_for_gaincurves,gaincurve_norm[*,whpk],$
+        plot,freqs_for_gaincurves_interp,gaincurve_norm[*,whpk],$
              ytitle='amplitude (normalized to unity)',$
              xtitle='freq (Hz)',$
              title='from rbsp_efw_fbk_freq_interpolate.pro',$
              yrange = [0.0001,20], /xlog,/xs,xrange = [0.01, 1d4],/ystyle,thick=2,/ylog
         ;;adjacent gain curve
-        oplot,freqs_for_gaincurves,gaincurve_norm[*,whpk+bin_shift[i]],color=50,thick=2
+        oplot,freqs_for_gaincurves_interp,gaincurve_norm[*,whpk+bin_shift[i]],color=50,thick=2
 
         ;;original frequency and amplitude
         oplot,[freq_peak_for_each_gaincurve[whpk],freq_peak_for_each_gaincurve[whpk]],$
@@ -680,9 +668,7 @@ for i=0,14 do oplot,freqs_for_gaincurves,gaincurve_norm[*,i],color=250,psym=-5
 
         stop
      endif
-
   endfor
-
 
 
 
@@ -709,73 +695,38 @@ for i=0,14 do oplot,freqs_for_gaincurves,gaincurve_norm[*,i],color=250,psym=-5
 
 ylim,'psp_fbk_freq_of_max_orig',0.1,10000,1
 ylim,'psp_fbk_freq_of_max_adj',0.1,10000,1
-options,'psp_fbk_freq_of_max_orig','psym',-5
-options,'psp_fbk_freq_of_max_orig','color',250
-options,'psp_fbk_freq_of_max_adj','psym',-5
-options,'psp_fbk_freq_of_max_adj','color',250
-store_data,'fbkcomb_orig',data=['psp_fld_l2_dfb_dc_bpf_dV34_peak','psp_fbk_freq_of_max_orig']
-store_data,'fbkcomb_adj',data=['psp_fld_l2_dfb_dc_bpf_dV34_peak','psp_fbk_freq_of_max_adj']
-ylim,'fbkcomb_orig',0.1,10000,1
-ylim,'fbkcomb_adj',0.1,10000,1
+options,'psp_fbk_freq_of_max_orig','psym',5
+options,'psp_fbk_freq_of_max_orig','thick',2
+options,'psp_fbk_freq_of_max_orig','color',50
+options,'psp_fbk_freq_of_max_adj','psym',5
+options,'psp_fbk_freq_of_max_adj','thick',2
+options,'psp_fbk_freq_of_max_adj','color',50
+if type eq 'dV' then store_data,'fbkcomb_orig',data=['psp_fld_l2_dfb_dc_bpf_dV34hg_peak','psp_fbk_freq_of_max_orig']
+if type eq 'dV' then store_data,'fbkcomb_adj',data=['psp_fld_l2_dfb_dc_bpf_dV34hg_peak','psp_fbk_freq_of_max_adj']
+if type eq 'SC' then store_data,'fbkcomb_orig',data=['psp_fld_l2_dfb_dc_bpf_SCMulfhg_peak','psp_fbk_freq_of_max_orig']
+if type eq 'SC' then store_data,'fbkcomb_adj',data=['psp_fld_l2_dfb_dc_bpf_SCMulfhg_peak','psp_fbk_freq_of_max_adj']
+ylim,'fbkcomb_orig',100,400,1
+ylim,'fbkcomb_adj',100,400,1
 tplot,['fbkcomb_orig','fbkcomb_adj']
 
-store_data,'speccomb_orig',data=['psp_fld_l2_dfb_ac_spec_dV12hg','psp_fbk_freq_of_max_orig']
-store_data,'speccomb_adj',data=['psp_fld_l2_dfb_ac_spec_dV12hg','psp_fbk_freq_of_max_adj']
-ylim,'speccomb_orig',0.1,10000,1
-ylim,'speccomb_adj',0.1,10000,1
-tplot,['speccomb_orig','speccomb_adj','fbkcomb_adj']
+if type eq 'dV' then store_data,'speccomb_orig',data=['psp_fld_l2_dfb_dc_spec_dV12hg','psp_fbk_freq_of_max_orig']
+if type eq 'dV' then store_data,'speccomb_adj',data=['psp_fld_l2_dfb_dc_spec_dV12hg','psp_fbk_freq_of_max_adj']
+if type eq 'SC' then store_data,'speccomb_orig',data=['psp_fld_l2_dfb_dc_spec_SCMdlfhg','psp_fbk_freq_of_max_orig']
+if type eq 'SC' then store_data,'speccomb_adj',data=['psp_fld_l2_dfb_dc_spec_SCMdlfhg','psp_fbk_freq_of_max_adj']
+ylim,'speccomb_orig',100,400,1
+ylim,'speccomb_adj',100,400,1
+zlim,'psp_fld_l2_dfb_dc_spec_dV12hg',1d-13,1d-8,1
+zlim,'psp_fld_l2_dfb_dc_spec_SCMdlfhg',1d-8,1d-2,1
 
-
-
-ylim,['psp_fld_l2_dfb_ac_spec_dV12hg','psp_fld_l2_dfb_dc_bpf_dV34_peak'],100,10000.,1
-tplot,['psp_fld_l2_dfb_ac_spec_dV12hg','psp_fld_l2_dfb_dc_bpf_dV34_peak','psp_fbk_freq_of_max_orig','psp_fbk_freq_of_max_adj']
+if type eq 'dV' then tplot,['psp_fld_l2_dfb_dc_spec_dV12hg','fbkcomb_orig','speccomb_orig','fbkcomb_adj','speccomb_adj']
+if type eq 'SC' then tplot,['psp_fld_l2_dfb_dc_spec_SCMdlfhg','fbkcomb_orig','speccomb_orig','fbkcomb_adj','speccomb_adj']
 
 
 stop
 
 
-
-;Plot the gain curves
-
-  if keyword_set(testing) and n_elements(freq_peak_for_each_gaincurve) eq 13 then begin
-     window, 0
-
-     plot,  freq ,gaincurve_norm[*,0] , yrange = [0,1], /xlog, /xs,xrange = [0.1, 1d4], /ystyle, $
-            background = 255, color = 0 , thick = 2, xtitle = 'Hz', ytitle = 'dB', $
-            title = 'Filter Bank Unity response curves...these are the ones used in this program'
-
-     for kk = 1, n_elements(freq_peak_for_each_gaincurve)-1, 1 do oplot, freq, gaincurve_norm[*,kk],$
-        color = kk*20 + 20, thick = 2
-
-
-     window, 1
-     plot,  freq , 20d * alog10(FB_theoretical_Gainresponse_UnityGain10kHz[*,0] ), $
-            yrange = [-70,1], /xlog, /xs,xrange = [0.1, 1d4], /ystyle, $
-            background = 255, color = 0 , thick = 2, $
-            xtitle = 'Hz', $
-            ytitle = 'dB', $
-            title = 'Filter Banks Theoretical Response (Unity gain at 10kHz)'
-
-     for kk = 1, n_elements(freq_peak_for_each_gaincurve)-1, 1 do oplot, freq, 20d * alog10(FB_theoretical_Gainresponse_UnityGain10kHz[*,kk]),$
-        color = kk*20 + 20, thick = 2
-
-     stop
-
-     window, 2
-     plot,  freq , 20d * alog10(FB_theoretical_Gainresponse_E12ACmeasuredResponseConvolved[*,0]),$
-            yrange = [-70,1], /xlog, /xs,xrange = [0.1, 1d4], /ystyle, $
-            background = 255, color = 0 , thick = 2, $
-            xtitle = 'Hz', $
-            ytitle = 'dB', $
-            title = 'Filter Banks Theoretical Response, E12AC measured response convovled '
-
-     for kk = 1, n_elements(freq_peak_for_each_gaincurve)-1, 1 do $
-        oplot, freq, 20d * alog10(FB_theoretical_Gainresponse_E12ACmeasuredResponseConvolved[*,kk]), $
-               color = kk*20 + 20, thick = 2
-
-     stop
-  endif
-
+;ylim,['psp_fld_l2_dfb_dc_spec_dV12hg','psp_fld_l2_dfb_dc_bpf_dV34_peak'],100,10000.,1
+;tplot,['psp_fld_l2_dfb_dc_spec_dV12hg','psp_fld_l2_dfb_dc_bpf_dV34_peak','psp_fbk_freq_of_max_orig','psp_fbk_freq_of_max_adj']
 
 
 end
