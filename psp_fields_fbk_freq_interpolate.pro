@@ -11,8 +11,16 @@
 ;			  curve is normalized to unity.
 ;
 ;
+;***********************************
+;NOTES: 1) assumes data are normalized by frequency (as was true on RBSP). May not be true 
+;on PSP. If not, then don't use the normalized curves. 
+;2) plotted freqs are a bit off. I may not be using the correct freq for each FBK bin.
+; (freq peak? freq center? )
+;**********************************
+;
+;
 ; KEYWORDS: testing -> makes various plots for each data point
-
+;
 ;           scale_fac_lim -> Set to ensure that the
 ;			  correction is applied only to narrowband
 ;			  waves. This is defined as val_adjacent/mvpk, the
@@ -25,8 +33,7 @@
 ;			  adjacent bin. This corresponds to a signal
 ;			  that is 0.215 times the amplitude in the
 ;			  peak bin. This represents the extreme low
-;			  value of scale_fac_lim. The default is set
-;			  to 0.6 for FBK13 and 0.1 for FBK7. **WARNING**: setting this factor too
+;			  value of scale_fac_lim. **WARNING**: setting this factor too
 ;			  high results in occasional unrealistic FBK
 ;			  amplitudes b/c the amplitude adjustment can
 ;			  be very large. This can often happen when
@@ -53,15 +60,12 @@
 ;                         this value to limit how much amplitude boost
 ;                         the program gives. Defaults to 2.
 ;
-;		 	  Ex: info = {probe:'a',fbk_mode:'7',fbk_type:'Ew'}
-;           rbsp_efw_fbk_freq_interpolate,'rbspb_efw_fbk_13_fb1_pk',info,/noplot
-;					where the tplot variable is the [n,13] filterbank data. Can also be
-;					used with FBK7
+;
 ;
 ;
 ;			  Returns the following 1-D tplot variables
-;				fbk_maxamp_orig -> the max FBK amp of all 13(7) input freq bins for each time for input data
-;				fbk_binnumber_of_max_orig -> the bin number [0-12] for FBK 13 or [0-6] for FBK7 that this max value occurs in
+;				fbk_maxamp_orig -> the max FBK amp of all input freq bins for each time for input data
+;				fbk_binnumber_of_max_orig -> the bin number that this max value occurs in
 ;				fbk_maxamp_adj -> the adjusted max FBK amp. This is an attempt to correct
 ;						the amp b/c of its
 ;						undervaluation due to
@@ -86,7 +90,7 @@
 ;
 ;
 ;			  Note: this routine assumes a narrowband wave. Say the max value of a
-;			  chorus wave is seen in bin 10 from FBK13 (400-800 Hz).
+;			  chorus wave is seen in bin 10.
 ;			  The innate freq resolution is poor for the FBK product. However, the gain
 ;			  curves for adjacent bins overlap. So, if you
 ;			  know the amplitudes in the adjacent bins (bin 9 and bin 11) then you can
@@ -94,20 +98,16 @@
 ;			  to make the amplitude in bin 9 (say) equal that in bin 10. This is the
 ;			  actual
 ;			  wave
-;			  frequency. To see how well the interpolation works see rbsp_efw_fbk_freq_interpolate_test.pro
+;			  frequency. To see how well the interpolation works see rbsp_efw_psp_freq_interpolate_test.pro
 ;
 ;  REQUIRES:  FBK gain curves (supplied by David Malaspina from LASP)
 ;
 ;
 
-;Here I plot the low and high freq bin limits for each FBK channel as
-;well as the location in frequency of the peak of each
-;channel's gain curve. Note that the last of freqmax has been set
-;to the channel's center value.
 
 
-;; for i=0,12 do print,i+1, fcals.cal_fbk.FREQ_FBK13L[i], '  ',fcals.cal_fbk.freq_fbk13C[i],'   ',fbins_maxgain[i], '  ',fcals.cal_fbk.FREQ_FBK13H[i]
-
+;**********************************************************
+;;**THESE VALUES ARE FOR RBSP -- NEED TO UPDATE THEM FOR PSP
 ;; FBK bin  freqlow         center      freq_peakofgaincurve  freqhigh
 ;;  1     0.800000        1.15000         1.36000        1.50000
 ;;  2      1.50000        2.25000         2.62000        3.00000
@@ -122,17 +122,7 @@
 ;; 11      800.000        1200.00         1360.00        1600.00
 ;; 12      1600.00        2400.00         2800.00        3200.00
 ;; 13      3200.00        4850.00         4850.00        6500.00
-
-
-;
-; 			  bin -> the bin number of the peak FBK value for FBK 7
-;					bin        0     0.800000      1.50000 Hz
-;					bin        1      3.00000      6.00000 Hz
-;					bin        2      12.0000      25.0000 Hz
-;					bin        3      50.0000      100.000 Hz
-;					bin        4      200.000      400.000 Hz
-;					bin        5      800.000      1600.00 Hz
-;					bin        6      3200.00      6500.00 Hz
+;**********************************************************
 ;
 ;
 ;
@@ -142,12 +132,10 @@
 ;			  to a very good freq determination.
 ;
 ;			  At the moment the program only uses the unity gain curves.
-;			  These are applicable for DC-coupled Ew channels like E12DC which is the default
-;			  FBK channel - but this may change.
 ;
 ;
 ;
-;   CREATED:  03/07/2013
+;   CREATED:  Nov 2020 (adapted from RBSP version written on 03/07/2013)
 ;   CREATED BY:  Aaron W. Breneman
 ;    LAST MODIFIED:  10/26/2013   v1.0.1
 ;						Major modifications
@@ -157,9 +145,11 @@
 ;-
 ;**************************************************************************
 
+
+;Makes plots look nice
 rbsp_efw_init
 
-
+;Select date for analysis
 timespan,'2018-11-03'
 
 ;Load the FBK data
@@ -173,37 +163,35 @@ psp_fld_load,type='dfb_dc_spec',/no_staging
 
 ;-------------------------------------------------------
 ;Choose whether you want Ew or Bw
+
+;Electric fields (via potentials)
 ;tname = 'psp_fld_l2_dfb_dc_bpf_dV34hg_peak'
+;Magnetic fields
 tname = 'psp_fld_l2_dfb_dc_bpf_SCMulfhg_peak'
 
 
-;ylim,['psp_fld_l2_dfb_dc_spec_dV12hg','psp_fld_l2_dfb_dc_bpf_dV34hg_peak'],100,10000.,1
-;tplot,['psp_fld_l2_dfb_dc_spec_dV12hg','psp_fld_l2_dfb_dc_bpf_dV34hg_peak']
 
-
-;*****
-;Limit the data for more easy comparison 
-
-;t0z = '2018-11-03/19:13:31'
-;t1z = '2018-11-03/19:46:37'
-;t0z = '2018-11-03/19:18:17'
-;t1z = '2018-11-03/19:19:14'
-
-
-;time_clip,tname,t0z,t1z,/replace
-
-
-;pro psp_fields_fbk_freq_interpolate,tname,info,$
-;                                  scale_fac_lim=scale_factor_limit,minamp=minamp,$
-;                                  maxamp_lim=maxamp_lim,$
-;                                  testing=testing
+;Determine whether to use DC or AC response curves
+acdc = strmid(tname,15,2)
 
 
 
+if tname eq 'psp_fld_l2_dfb_dc_bpf_SCMulfhg_peak' then $
+      spectvar = 'psp_fld_l2_dfb_dc_spec_SCMflfhg' else spectvar = 'psp_fld_l2_dfb_dc_spec_dV12hg'
 
 
 
+;plot the spectral and FBK data
+ylim,[spectvar,tname],100,10000.,1
+tplot,[spectvar,tname]
+
+stop
+
+
+
+  ;extract data from tplot variable
   get_data,tname,data=pk
+
 
 ;Modify "pk" array so that it has ascending freqs
   pk2 = {x:pk.x,y:pk.y,v:reform(pk.v[0,*])} 
@@ -214,15 +202,17 @@ tname = 'psp_fld_l2_dfb_dc_bpf_SCMulfhg_peak'
 pk = pk2
 
 ;Remove bottom couple of FBK bins. 
-pk.y[*,5] = 0.
+print,pk.v 
+stop
+pk.y[*,0:5] = 0.
 
 
-;   plot,pk.v[*,0]
-;   plot,pk2.v[*,0]
+
 
   maxbin = 15
 
 
+  ;define arrays that will hold original and correced freq and amplitude values
   amp_original = fltarr(n_elements(pk.x))             ;;peak amplitude for each time
   amp_corrected = fltarr(n_elements(pk.x))            ;;corrected amplitudes for each time
 
@@ -231,11 +221,11 @@ pk.y[*,5] = 0.
 
 
 
+;***************EMILY - CHANGE THIS ***************************
   ;;Grab the gain curves
 path = '~/Desktop/code/Aaron/github.umn.edu/filterbank_frequency_enhancer/'
 
-;Determine whether to use DC or AC response curves
-acdc = strmid(tname,15,2)
+
 
 if acdc eq 'ac' then restore,path+'PSP_FIELDS_DFB_AC_FilterBank_BandPass_Response_60dB_and_Above_20190502_DMM.sav'
 if acdc eq 'dc' then restore,path+'PSP_FIELDS_DFB_DC_FilterBank_BandPass_Response_60dB_and_Above_20190502_DMM.sav'
@@ -250,22 +240,27 @@ if acdc eq 'dc' then restore,path+'PSP_FIELDS_DFB_DC_FilterBank_BandPass_Respons
    type = strmid(tname,22,2)
 
 
-  ;;Set default values
+
   if ~keyword_set(scale_factor_limit) then scale_factor_limit = 0.9
+  ;Define the minimum allowable FBK amplitude to consider for adjustment.
   if ~keyword_set(minamp) then begin
+      ;******MAY NEED TO ADJUST THESE VALUES
    if type eq 'dV' then minamp = 1d-3      ;V
    if type eq 'SC' then minamp = 2*0.012      ;nT
   endif
+      ;Define max amount that amplitudes are allowed to be adjusted by 
   if ~keyword_set(maxamp_lim) then maxamp_lim = 2.
 
 
+;construct the gain curves
 if acdc eq 'dc' then gaincurve = [[db_14],[db_13],[db_12],[db_11],[db_10],[db_9],[db_8],[db_7],[db_6],[db_5],[db_4],[db_3],[db_2],[db_1],[db_0]]
 if acdc eq 'ac' then gaincurve = [[db_6],[db_5],[db_4],[db_3],[db_2],[db_1],[db_0]]
 
 
+;Plot the gain curves
 plot,freqs_for_gaincurves,gaincurve[*,0],/xlog,xrange=[1,10000],yrange=[-100,0]
 for i=0,14 do oplot,freqs_for_gaincurves,gaincurve[*,i]
-
+stop
 
 ;********************************
 ;********************************
@@ -304,18 +299,32 @@ plot,freqs_for_gaincurves,gaincurve_norm[*,0],/xlog,xrange=[1,10000],yrange=[-10
 for i=0,14 do oplot,freqs_for_gaincurves,gaincurve_norm[*,i]
 
 
-;if acdc eq 'dc' then freq_peak_for_each_gaincurve = float([0.4,0.7,1.6,2.9,6.3,11,25,46,100,185,398,736,1585,2929,8577])
-;if acdc eq 'ac' then freq_peak_for_each_gaincurve = float([770,1423,3066,5667,12209,26304,77036])
+;**************NEED TO CHOOSE WHICH OF THE BELOW FREQUENCIES THAT DEFINE EACH FREQUENCY BIN YOU WANT TO USE 
+;***THIS NEEDS TO BE TESTED USING THE "TESTING" KEYWORD
 
-freq_peak_for_each_gaincurve = pk.v
+;;USE THE LOWER FREQUENCY FOR EACH FBK BIN (THE ONE THAT TPLOT PLOTS)
+;freq_peak_for_each_gaincurve = [ 0.4262  ,.6175 ,1.192 ,2.419 ,4.910 ,9.475 ,19.23 ,38.39 ,76.62 ,155.5 ,310.4 ,630.1 ,1237. ,2427. ,4763.]
 
+
+;;USE THE HIGHER FREQUENCY FOR EACH FBK BIN  (THE ONE THAT TPLOT PLOTS)
+;freq_peak_for_each_gaincurve = [.6072,1.192,2.378,4.828,9.636,19.89,39.70,76.62,150.4,295.1,609.2,1237.,2427.,4926.,7019.]
+
+
+;;USE THE CENTER FREQUENCY FOR EACH FBK BIN (THE ONE THAT TPLOT PLOTS)
+;;THIS IS ALSO WHAT YOU GET FROM PK.V 
+;freq_peak_for_each_gaincurve =  [0.429153,0.858307, 1.71661, 3.43323, 6.86646, 13.7329, 27.4658,54.9316, 109.863, 219.727,439.453,878.906, 1757.81, 3515.62,7031.25]
+
+
+;USE THE FREQUENCY CORRESPONDING TO THE PEAK IN POWER OF EACH FBK BIN
+freq_peak_for_each_gaincurve =  [0.40,0.73,1.58,2.93,6.31,11.66,25.12,46.42,100.00,184.78,398.11,735.64,1584.89,2928.64,8576.96]
+
+
+;***********************************
 
 ;--------------------------------------------------
 ;increase the resolution of the gain curves
 ;--------------------------------------------------
 
-
-stop
 nelem = 1000.
 maxfreq = 10000.
 minfreq = 0.1
@@ -340,7 +349,7 @@ plot,freqs_for_gaincurves,gaincurve_norm[*,0],/xlog,xrange=[0.1,10000.],yrange=[
 for i=0,14 do oplot,freqs_for_gaincurves,gaincurve_norm[*,i],color=250,psym=-5
 
 
-
+stop
 
   gaincurve_dB = gc2
   freqs_for_gaincurves_interp = newfreqs
@@ -423,7 +432,7 @@ for i=0,14 do oplot,freqs_for_gaincurves,gaincurve_norm[*,i],color=250,psym=-5
 
      ;;***4) if the neighboring bin value is at noise level then we won't try to interpolate freq or amp
      if type eq 'dV' then noiselevel = 0.0005     ;V  (*****CHECK THIS NUMBER*****)
-     if type eq 'SC' then noiselevel = 0.02
+     if type eq 'SC' then noiselevel = 0.02        ;Bw  (*****CHECK THIS NUMBER*****)
 
      if val_adjacent le noiselevel then begin
         val_adjacent = pk.y[i,whpk]
@@ -452,14 +461,6 @@ for i=0,14 do oplot,freqs_for_gaincurves,gaincurve_norm[*,i],color=250,psym=-5
 
 
 
-
-;***********************
-;AM I ALLOWING BIN_SHIFT TO CHANGE ENOUGH? 
-;I THINK JUST +/- 1 IS ALLOWED, EVEN THOUGH THERE ARE 1000 FREQ BINS. 
-;*****************************
-;*****************************
-;*****************************
-;*****************************
 
      ;;Find the actual freq that a narrowband signal would be to
      ;;appear in the adjacent FBK bin with the amplitude that it does
@@ -537,8 +538,9 @@ for i=0,14 do oplot,freqs_for_gaincurves,gaincurve_norm[*,i],color=250,psym=-5
 ;MASTER PLOT
 ;--------------------------------------------------
 
-;*****
-   testing = 1
+;**************************************
+;Set testing = 1 to stop and test the interpolation for each time step
+   testing = 0
 
      if keyword_set(testing) and bin_shift[i] ne 0 then begin
         !p.multi = [0,0,2]
