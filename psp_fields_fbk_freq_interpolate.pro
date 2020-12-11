@@ -150,7 +150,7 @@
 rbsp_efw_init
 
 ;Select date for analysis
-timespan,'2018-11-03'
+timespan,'2018-11-02',2,/days
 
 ;Load the FBK data
 psp_fld_load,type='dfb_dc_bpf',/no_staging
