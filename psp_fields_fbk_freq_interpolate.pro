@@ -165,9 +165,9 @@ psp_fld_load,type='dfb_dc_spec',/no_staging
 ;Choose whether you want Ew or Bw
 
 ;Electric fields (via potentials)
-;tname = 'psp_fld_l2_dfb_dc_bpf_dV34hg_peak'
+tname = 'psp_fld_l2_dfb_dc_bpf_dV34hg_peak'
 ;Magnetic fields
-tname = 'psp_fld_l2_dfb_dc_bpf_SCMulfhg_peak'
+;tname = 'psp_fld_l2_dfb_dc_bpf_SCMulfhg_peak'
 
 
 
@@ -185,7 +185,7 @@ if tname eq 'psp_fld_l2_dfb_dc_bpf_SCMulfhg_peak' then $
 ylim,[spectvar,tname],100,10000.,1
 tplot,[spectvar,tname]
 
-stop
+
 
 
 
@@ -199,11 +199,11 @@ stop
   for q=0,n_elements(pk2.x[*])-1 do pk2.y[q,*] = reverse(reform(pk.y[q,*]))
    pk2.v = reverse(reform(pk.v[0,*]))
 
-pk = pk2
+  pk = pk2
 
 ;Remove bottom couple of FBK bins. 
-print,pk.v 
-stop
+;print,pk.v 
+;stop
 pk.y[*,0:5] = 0.
 
 
@@ -257,15 +257,15 @@ if acdc eq 'dc' then gaincurve = [[db_14],[db_13],[db_12],[db_11],[db_10],[db_9]
 if acdc eq 'ac' then gaincurve = [[db_6],[db_5],[db_4],[db_3],[db_2],[db_1],[db_0]]
 
 
-;Plot the gain curves
-plot,freqs_for_gaincurves,gaincurve[*,0],/xlog,xrange=[1,10000],yrange=[-100,0]
-for i=0,14 do oplot,freqs_for_gaincurves,gaincurve[*,i]
-stop
+;;Plot the gain curves
+;plot,freqs_for_gaincurves,gaincurve[*,0],/xlog,xrange=[1,10000],yrange=[-100,0]
+;for i=0,14 do oplot,freqs_for_gaincurves,gaincurve[*,i]
+;stop
 
 ;********************************
 ;********************************
 ;********************************
-;NEED TO CHECK TO SEE IF THE PSP FILTER BANK DATA ARE ALREADY CALIBRATED!!!!
+;!!!!NEED TO CHECK TO SEE IF THE PSP FILTER BANK DATA ARE ALREADY CALIBRATED!!!!
 ;********************************
   ;;Normalize the gain curves. I'll use these b/c I'm assuming that
   ;;the FBK data is already
@@ -297,7 +297,7 @@ stop
 
 plot,freqs_for_gaincurves,gaincurve_norm[*,0],/xlog,xrange=[1,10000],yrange=[-100,0]
 for i=0,14 do oplot,freqs_for_gaincurves,gaincurve_norm[*,i]
-
+stop
 
 ;**************NEED TO CHOOSE WHICH OF THE BELOW FREQUENCIES THAT DEFINE EACH FREQUENCY BIN YOU WANT TO USE 
 ;***THIS NEEDS TO BE TESTED USING THE "TESTING" KEYWORD
@@ -315,7 +315,7 @@ for i=0,14 do oplot,freqs_for_gaincurves,gaincurve_norm[*,i]
 ;freq_peak_for_each_gaincurve =  [0.429153,0.858307, 1.71661, 3.43323, 6.86646, 13.7329, 27.4658,54.9316, 109.863, 219.727,439.453,878.906, 1757.81, 3515.62,7031.25]
 
 
-;USE THE FREQUENCY CORRESPONDING TO THE PEAK IN POWER OF EACH FBK BIN
+;USE THE FREQUENCY CORRESPONDING TO THE PEAK IN POWER OF EACH FBK BIN (SEEMS TO GIVE BEST RESULTS)
 freq_peak_for_each_gaincurve =  [0.40,0.73,1.58,2.93,6.31,11.66,25.12,46.42,100.00,184.78,398.11,735.64,1584.89,2928.64,8576.96]
 
 
@@ -349,7 +349,7 @@ plot,freqs_for_gaincurves,gaincurve_norm[*,0],/xlog,xrange=[0.1,10000.],yrange=[
 for i=0,14 do oplot,freqs_for_gaincurves,gaincurve_norm[*,i],color=250,psym=-5
 
 
-stop
+;stop
 
   gaincurve_dB = gc2
   freqs_for_gaincurves_interp = newfreqs
@@ -726,6 +726,7 @@ if type eq 'SC' then tplot,['psp_fld_l2_dfb_dc_spec_SCMdlfhg','fbkcomb_orig','sp
 
 stop
 
+tplot_save,'*',filename='~/Desktop/psp_fbk_nov2-3_2018_Ew'
 
 ;ylim,['psp_fld_l2_dfb_dc_spec_dV12hg','psp_fld_l2_dfb_dc_bpf_dV34_peak'],100,10000.,1
 ;tplot,['psp_fld_l2_dfb_dc_spec_dV12hg','psp_fld_l2_dfb_dc_bpf_dV34_peak','psp_fbk_freq_of_max_orig','psp_fbk_freq_of_max_adj']
