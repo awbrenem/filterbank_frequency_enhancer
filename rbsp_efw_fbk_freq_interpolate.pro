@@ -181,7 +181,10 @@ pro rbsp_efw_fbk_freq_interpolate,tname,info,$
 
 
   ;;Grab the gain curves
-  restore,'~/Desktop/code/Aaron/datafiles/rbsp/FBK_gain_curves/RBSP_FilterBank_Theoretical_Rsponse_wE12ACmeasuredResponse_DMM_20130305.sav'
+;  restore,'~/Desktop/code/Aaron/datafiles/rbsp/FBK_gain_curves/RBSP_FilterBank_Theoretical_Rsponse_wE12ACmeasuredResponse_DMM_20130305.sav'
+  restore,'~/Desktop/code/Aaron/github.umn.edu/filterbank_frequency_enhancer/RBSP_FilterBank_Theoretical_Rsponse_wE12ACmeasuredResponse_DMM_20130305.sav
+;~/Desktop/code/Aaron/github.umn.edu/filterbank_frequency_enhancer/RBSP_FilterBank_Theoretical_Rsponse_SCMw_measuredResponse_DMM_20131030.sav
+
   freqs_for_gaincurves = freq
 
 
